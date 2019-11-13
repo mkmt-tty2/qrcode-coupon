@@ -1,7 +1,7 @@
 const express = require('express');
 const mysql = require('mysql');
 const bodyParser = require('body-parser');
-const cors = require('cors')({origin: true});
+const cors = require('cors')({ origin: true });
 const app = express();
 app.use(bodyParser.json());
 app.use(cors);
@@ -10,7 +10,7 @@ const client = mysql.createConnection({
     host: 'localhost',
     user: 'root',
     password: 'Xsysmngr1@',
-    port : 3306,
+    port: 3306,
     database: 'sample'
 });
 
@@ -26,7 +26,6 @@ client.connect(function (err) {
 app.get('/user', (req, res) => {
     client.query('SELECT * from user;', (err, rows, fields) => {
         if (err) throw err;
-      
         res.send(rows);
     });
 });
@@ -35,13 +34,29 @@ app.get('/user', (req, res) => {
 app.post('/user/create', (req, res) => {
     const name = req.body.name;
     const status = req.body.status;
-    client.query('INSERT INTO user SET ?', {name: name, status: status}, (err, result) => {
+    client.query('INSERT INTO user SET ?', { name: name, status: status }, (err, result) => {
         if (err) throw err;
         client.query('SELECT * from user;', (err, rows, fields) => {
             if (err) throw err;
             res.send(rows);
         });
     })
+});
+
+app.post('/store/select', (req, res) => {
+    const code = req.body.code;
+    client.query(`SELECT * FROM store WHERE code = ?`, [code], (err, rows, fields) => {
+        if (err) throw err;
+        res.send(rows);
+    });
+});
+
+app.post('/coupon/select', (req, res) => {
+    const user_hash = req.body.user_hash;
+    client.query(`SELECT * FROM coupon WHERE user_hash = ? order by use_number`, [user_hash], (err, rows, fields) => {
+        if (err) throw err;
+        res.send(rows);
+    });
 });
 
 // update ok
@@ -68,5 +83,6 @@ app.delete('/user/delete', (req, res) => {
         });
     });
 });
+
 
 app.listen(3001, () => console.log('Listening on port 3001!'))
